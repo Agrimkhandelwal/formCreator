@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Define the base URL of your backend API
-const API = axios.create({ baseURL: 'http://localhost:8080/api' });
+const API = axios.create({ baseURL: 'https://form-creator-api.onrender.com./api' });
 
 // --- Form API Calls ---
 export const getForms = () => API.get('/forms');

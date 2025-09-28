@@ -8,8 +8,15 @@ dotenv.config();
 import router from './routes/Routes.js';
 import connectDB from './config/connectDb.js';
 
+const corsOptions = {
+  origin: 'https://form-creator-frontend1.onrender.com', 
+  optionsSuccessStatus: 200 
+};
+
+
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.use("/api/forms", router);

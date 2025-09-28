@@ -1,0 +1,139 @@
+import { useEffect, useState } from "react";
+import { saveForm, getForms, updateForm, deleteForm, duplicateForm } from "../api.js";
+
+const FormBuilder = () => {
+  const [fields, setFields] = useState([]);
+  const [forms, setForms] = useState([]);
+
+  // Fetch forms on load
+  useEffect(() => {
+    fetchForms();
+  }, []);
+
+  const fetchForms = async () => {
+    const res = await getForms();
+    setForms(res.data);
+  };
+
+  const addField = () => {
+    setFields([...fields, { label: "", type: "text" }]);
+  };
+
+  const handleFieldChange = (index, key, value) => {
+    const newFields = [...fields];
+    newFields[index][key] = value;
+    setFields(newFields);
+  };
+
+  const handleSaveForm = async () => {
+    if (fields.length === 0) return alert("Add at least one field!");
+    await saveForm({ fields });
+    setFields([]);
+    fetchForms();
+  };
+
+  const handleEditForm = async (id, fields) => {
+    await updateForm(id, { fields });
+    fetchForms();
+  };
+
+  const handleDeleteForm = async (id) => {
+    await deleteForm(id);
+    fetchForms();
+  };
+
+  const handleDuplicateForm = async (fields) => {
+    await duplicateForm(null, { fields }); // re-save as new
+    fetchForms();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <h1 className="text-4xl font-bold mb-6">Form Builder</h1>
+
+      {/* Form Editor */}
+      <div className="bg-white text-black p-6 rounded-2xl shadow-lg w-full max-w-2xl mb-8">
+        {fields.map((field, index) => (
+          <div key={index} className="mb-4 flex gap-4">
+            <input
+              type="text"
+              placeholder="Field Label"
+              value={field.label}
+              onChange={(e) => handleFieldChange(index, "label", e.target.value)}
+              className="border p-2 rounded w-1/2"
+            />
+            <select
+              value={field.type}
+              onChange={(e) => handleFieldChange(index, "type", e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="email">Email</option>
+              <option value="date">Date</option>
+            </select>
+          </div>
+        ))}
+        <div className="flex gap-4">
+          <button
+            onClick={addField}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          >
+            + Add Field
+          </button>
+          <button
+            onClick={handleSaveForm}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          >
+            Save Form
+          </button>
+        </div>
+      </div>
+
+      {/* Saved Forms */}
+      <h2 className="text-2xl font-semibold mb-4">Saved Forms</h2>
+      <div className="grid gap-6">
+        {forms.map((form) => (
+          <div
+            key={form._id}
+            className="bg-gray-800 p-4 rounded-lg shadow-md"
+          >
+            <h3 className="font-bold mb-2">Form ID: {form._id}</h3>
+            {form.fields.map((f, idx) => (
+              <div key={idx} className="mb-2">
+                <label className="block">{f.label}:</label>
+                <input
+                  type={f.type}
+                  placeholder={f.label}
+                  className="border p-2 rounded w-full text-black"
+                />
+              </div>
+            ))}
+            <div className="flex gap-3 mt-3">
+              <button
+                onClick={() => handleEditForm(form._id, form.fields)}
+                className="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDuplicateForm(form.fields)}
+                className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded"
+              >
+                Duplicate
+              </button>
+              <button
+                onClick={() => handleDeleteForm(form._id)}
+                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default FormBuilder;
